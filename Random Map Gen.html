@@ -3,9 +3,697 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Map Genrator</title>
+    <title>Ramdon Map Gen</title>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.9);
+            --accent-glow: #22d3ee;
+            --accent-deep: #0891b2;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --accent-glow: #0ea5e9;
+            --accent-deep: #0369a1;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: rgba(0, 0, 0, 0.1);
+            --input-bg: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- UI Layers --- */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            z-index: 100;
+        }
+
+        aside {
+            width: 400px;
+            height: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border);
+            padding: 32px;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 25px 0 80px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .engine-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent-glow), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- Components --- */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--input-bg);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-glow);
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            appearance: none;
+            background: var(--border);
+            height: 6px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+        }
+
+        .seed-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--accent-deep), var(--accent-glow));
+            color: white;
+            box-shadow: 0 8px 20px rgba(34, 211, 238, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 12px 30px rgba(34, 211, 238, 0.4);
+        }
+
+        .btn-icon {
+            background: var(--border);
+            color: var(--text-primary);
+            width: 48px;
+        }
+
+        /* --- Stats Overlay --- */
+        .stats-hud {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            gap: 24px;
+            pointer-events: none;
+        }
+
+        .stat-card {
+            background: var(--panel-bg);
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; }
+        .stat-value { font-size: 1.4rem; font-weight: 900; color: var(--accent-glow); }
+
+        /* --- Scene Wrap --- */
+        #canvas-wrap {
+            flex: 1;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            cursor: grab;
+        }
+        #canvas-wrap:active { cursor: grabbing; }
+
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-dark);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(34, 211, 238, 0.1);
+            border-top: 6px solid var(--accent-glow);
+            border-radius: 50%;
+            animation: spin 1s infinite cubic-bezier(0.45, 0, 0.55, 1);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-glow); border-radius: 10px; }
+    </style>
 </head>
 <body>
-  
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="margin-top: 24px; letter-spacing: 5px; color: var(--accent-glow); font-size: 0.75rem; font-weight: 900;">GEOLOGICAL INITIALIZATION</div>
+    </div>
+
+    <div id="ui-layer">
+        <aside>
+            <header>
+                <div class="brand">
+                    <span class="engine-title">AstroGen</span>
+                    <span class="tagline">Procedural Planet Engine</span>
+                </div>
+                <button class="btn-icon" id="theme-toggle">🌓</button>
+            </header>
+
+            <div class="control-group">
+                <label>Planet Seed</label>
+                <div class="seed-box">
+                    <input type="text" id="seed-input" value="TITAN-VII">
+                    <button class="btn-icon" id="random-seed">🎲</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Scale</label>
+                    <span class="badge" id="size-val">1.6</span>
+                </div>
+                <input type="range" id="size-slider" min="1.0" max="2.5" step="0.1" value="1.6">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Resolution</label>
+                    <span class="badge" id="detail-val">96</span>
+                </div>
+                <input type="range" id="detail-slider" min="32" max="160" step="32" value="96">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Sea Level</label>
+                    <span class="badge" id="sea-val">0.48</span>
+                </div>
+                <input type="range" id="sea-slider" min="0.2" max="0.7" step="0.01" value="0.48">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Roughness</label>
+                    <span class="badge" id="rough-val">1.3</span>
+                </div>
+                <input type="range" id="rough-slider" min="0.5" max="3.0" step="0.1" value="1.3">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Mountain Power</label>
+                    <span class="badge" id="peak-val">1.5</span>
+                </div>
+                <input type="range" id="peak-slider" min="0.5" max="4.0" step="0.1" value="1.5">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label>Drainage density</label>
+                    <span class="badge" id="river-val">30</span>
+                </div>
+                <input type="range" id="river-slider" min="0" max="150" step="10" value="30">
+            </div>
+
+            <button class="btn-primary" id="generate-btn">Synthesize World</button>
+            
+            <div style="margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 10px;">
+                <button class="btn-icon" id="play-pause" style="width: 100%;">Pause Spin</button>
+                <button class="btn-icon" id="export-png" style="width: 100%;">Snapshot</button>
+            </div>
+        </aside>
+
+        <div class="stats-hud">
+            <div class="stat-card">
+                <span class="stat-label">Hydro-Network</span>
+                <span class="stat-value" id="stat-rivers">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Land Ratio</span>
+                <span class="stat-value" id="stat-ratio">0%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Climate Index</span>
+                <span class="stat-value" id="stat-hab">Alpha</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-wrap"></div>
+
+    <script>
+        /**
+         * CORE UTILITIES: Deterministic Randomness & PRNG
+         */
+        class GeneratorUtils {
+            static getSeededRandom(seed) {
+                let h = 2166136261 >>> 0;
+                for (let i = 0; i < seed.length; i++) {
+                    h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+                }
+                return () => {
+                    h += h << 13; h ^= h >>> 7; h += h << 3; h ^= h >>> 17; h += h << 5;
+                    return (h >>> 0) / 4294967296;
+                };
+            }
+        }
+
+        /**
+         * CORE ENGINE: 3D NOISE SYSTEM
+         * Specialized 3D FBM Noise for procedural generation
+         */
+        class NoiseEngine {
+            constructor(random) {
+                this.p = new Uint8Array(512);
+                const values = Array.from({length: 256}, (_, i) => i);
+                for(let i = 255; i > 0; i--) {
+                    const r = Math.floor(random() * (i + 1));
+                    [values[i], values[r]] = [values[r], values[i]];
+                }
+                for(let i = 0; i < 512; i++) this.p[i] = values[i % 256];
+            }
+
+            fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+            lerp(t, a, b) { return a + t * (b - a); }
+            grad(hash, x, y, z) {
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+
+            sample(x, y, z) {
+                const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+                x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+                const u = this.fade(x), v = this.fade(y), w = this.fade(z);
+                const A = this.p[X]+Y, AA = this.p[A]+Z, AB = this.p[A+1]+Z;
+                const B = this.p[X+1]+Y, BA = this.p[B]+Z, BB = this.p[B+1]+Z;
+                return this.lerp(w, 
+                    this.lerp(v, this.lerp(u, this.grad(this.p[AA], x, y, z), this.grad(this.p[BA], x-1, y, z)),
+                               this.lerp(u, this.grad(this.p[AB], x, y-1, z), this.grad(this.p[BB], x-1, y-1, z))),
+                    this.lerp(v, this.lerp(u, this.grad(this.p[AA+1], x, y, z-1), this.grad(this.p[BA+1], x-1, y, z-1)),
+                               this.lerp(u, this.grad(this.p[AB+1], x, y-1, z-1), this.grad(this.p[BB+1], x-1, y-1, z-1))));
+            }
+
+            fbm(x, y, z, octaves = 6) {
+                let total = 0, freq = 1, amp = 1, maxAmp = 0;
+                for(let i=0; i<octaves; i++) {
+                    total += this.sample(x * freq, y * freq, z * freq) * amp;
+                    maxAmp += amp;
+                    amp *= 0.5;
+                    freq *= 2.1;
+                }
+                return (total / maxAmp + 1) / 2;
+            }
+        }
+
+        /**
+         * PLANETARY ARCHITECT
+         * Handles the Three.js scene, geometry deformation, and river logic
+         */
+        class PlanetArchitect {
+            constructor() {
+                this.setupThree();
+                this.isRotating = true;
+                this.mouse = { down: false, x: 0, y: 0 };
+                this.addInteractions();
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            setupThree() {
+                this.wrap = document.getElementById('canvas-wrap');
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.wrap.appendChild(this.renderer.domElement);
+
+                this.camera.position.z = 6;
+                
+                // Studio Lighting
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+                const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+                sun.position.set(5, 5, 8);
+                this.scene.add(sun);
+
+                // Deep Space Field
+                const starGeo = new THREE.BufferGeometry();
+                const starPos = [];
+                for(let i=0; i<5000; i++) {
+                    starPos.push((Math.random()-0.5)*200, (Math.random()-0.5)*200, (Math.random()-0.5)*200);
+                }
+                starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+                this.scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x888888, size: 0.05 })));
+            }
+
+            addInteractions() {
+                this.wrap.addEventListener('mousedown', (e) => {
+                    this.mouse.down = true;
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                window.addEventListener('mouseup', () => this.mouse.down = false);
+                window.addEventListener('mousemove', (e) => {
+                    if(!this.mouse.down || !this.body) return;
+                    const dx = e.clientX - this.mouse.x;
+                    const dy = e.clientY - this.mouse.y;
+                    this.body.rotation.y += dx * 0.005;
+                    this.body.rotation.x += dy * 0.005;
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+                this.wrap.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    this.camera.position.z = Math.min(12, Math.max(2.5, this.camera.position.z + e.deltaY * 0.005));
+                }, { passive: false });
+            }
+
+            async construct(config) {
+                if(this.body) this.scene.remove(this.body);
+                if(this.atmo) this.scene.remove(this.atmo);
+
+                const prng = GeneratorUtils.getSeededRandom(config.seed);
+                const noise = new NoiseEngine(prng);
+                const mNoise = new NoiseEngine(prng);
+
+                const geo = new THREE.IcosahedronGeometry(config.radius, config.detail);
+                const pos = geo.attributes.position;
+                const colors = new Float32Array(pos.count * 3);
+                
+                const surfaceData = { heights: [], moistures: [], riverSet: new Set() };
+                let landTotal = 0;
+
+                // 1. Terrain Pass (Height + Moisture)
+                for(let i=0; i < pos.count; i++) {
+                    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+                    let h = noise.fbm(x * config.rough, y * config.rough, z * config.rough, 8);
+                    
+                    // Polar Influence
+                    const lat = Math.abs(y / config.radius);
+                    if (lat > 0.85) h += (lat - 0.85) * 0.6; // Cold mountain logic
+
+                    let m = mNoise.fbm(x * 0.8, y * 0.8, z * 0.8, 5);
+                    
+                    surfaceData.heights[i] = h;
+                    surfaceData.moistures[i] = m;
+                    if(h > config.sea) landTotal++;
+                }
+
+                // 2. Hydrological Flow (Gradient Descent)
+                if(config.rivers > 0) {
+                    for(let r=0; r < config.rivers; r++) {
+                        let current = Math.floor(prng() * pos.count);
+                        if(surfaceData.heights[current] < config.sea + 0.1) continue;
+
+                        for(let step=0; step < 80; step++) {
+                            surfaceData.riverSet.add(current);
+                            let bestNeighbor = current;
+                            let minElev = surfaceData.heights[current];
+
+                            // Stochastic neighbor search
+                            for(let n=0; n<12; n++) {
+                                let neighbor = (current + Math.floor(prng() * 150)) % pos.count;
+                                if(surfaceData.heights[neighbor] < minElev) {
+                                    minElev = surfaceData.heights[neighbor];
+                                    bestNeighbor = neighbor;
+                                }
+                            }
+
+                            if(bestNeighbor === current || surfaceData.heights[bestNeighbor] < config.sea) break;
+                            current = bestNeighbor;
+                        }
+                    }
+                }
+
+                // 3. Meshing & Coloring
+                for(let i=0; i < pos.count; i++) {
+                    const h = surfaceData.heights[i], m = surfaceData.moistures[i];
+                    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+                    const lat = Math.abs(y / config.radius);
+
+                    // Deform vertices
+                    const isLand = h > config.sea;
+                    const displacement = isLand ? (h - config.sea) * 0.5 * config.peaks : 0;
+                    const normal = new THREE.Vector3(x, y, z).normalize();
+                    pos.setXYZ(i, x + normal.x * displacement, y + normal.y * displacement, z + normal.z * displacement);
+
+                    // Biome Coloring Logic
+                    const color = new THREE.Color();
+                    if(!isLand) {
+                        color.set(h < config.sea - 0.15 ? '#020617' : '#0ea5e9'); // Depth shading
+                    } else if (surfaceData.riverSet.has(i)) {
+                        color.set('#38bdf8'); // Active rivers
+                    } else if (lat > 0.88 || (h > 0.88 && lat > 0.5)) {
+                        color.set('#f1f5f9'); // Glacial
+                    } else if (h > 0.82) {
+                        color.set('#475569'); // Peaks
+                    } else if (h < config.sea + 0.03) {
+                        color.set('#fde047'); // Coast
+                    } else {
+                        // Whittaker-inspired Climate matrix
+                        const temp = 1.2 - (h * 0.3 + lat * 0.75);
+                        if (temp > 0.8) {
+                            color.set(m > 0.65 ? '#064e3b' : m > 0.35 ? '#166534' : '#d97706'); 
+                        } else if (temp > 0.45) {
+                            color.set(m > 0.5 ? '#15803d' : '#84cc16');
+                        } else {
+                            color.set(m > 0.4 ? '#365314' : '#94a3b8');
+                        }
+                    }
+
+                    colors[i*3] = color.r;
+                    colors[i*3+1] = color.g;
+                    colors[i*3+2] = color.b;
+                }
+
+                geo.computeVertexNormals();
+                geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                
+                this.body = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ 
+                    vertexColors: true, 
+                    shininess: 12,
+                    flatShading: config.detail < 70
+                }));
+                this.scene.add(this.body);
+
+                // Atmosphere
+                const atmoGeo = new THREE.SphereGeometry(config.radius * 1.05, 64, 64);
+                this.atmo = new THREE.Mesh(atmoGeo, new THREE.MeshPhongMaterial({
+                    color: 0x22d3ee,
+                    transparent: true,
+                    opacity: 0.08,
+                    side: THREE.BackSide,
+                    blending: THREE.AdditiveBlending
+                }));
+                this.scene.add(this.atmo);
+
+                // Update Stats
+                document.getElementById('stat-rivers').textContent = surfaceData.riverSet.size.toLocaleString();
+                document.getElementById('stat-ratio').textContent = `${Math.floor((landTotal / pos.count) * 100)}%`;
+                const indices = ['Borealis', 'Zion', 'Helios', 'Terra', 'Delta'];
+                document.getElementById('stat-hab').textContent = indices[Math.floor(prng() * indices.length)];
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                if(this.isRotating && this.body && !this.mouse.down) {
+                    this.body.rotation.y += 0.0012;
+                }
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        /**
+         * APPLICATION CONTROLLER
+         */
+        const AstroApp = {
+            init() {
+                this.engine = new PlanetArchitect();
+                this.setupUI();
+                this.generate();
+                this.engine.animate();
+
+                setTimeout(() => {
+                    const loader = document.getElementById('loader');
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 1000);
+                }, 1800);
+            },
+
+            setupUI() {
+                const els = {
+                    seed: 'seed-input', detail: 'detail-slider', sea: 'sea-slider', 
+                    rough: 'rough-slider', river: 'river-slider', peaks: 'peak-slider',
+                    radius: 'size-slider', btn: 'generate-btn', rand: 'random-seed', 
+                    pause: 'play-pause', theme: 'theme-toggle', export: 'export-png'
+                };
+                this.ui = {};
+                for(let k in els) this.ui[k] = document.getElementById(els[k]);
+
+                this.ui.btn.onclick = () => this.generate();
+                this.ui.rand.onclick = () => {
+                    this.ui.seed.value = "CORE-" + Math.floor(Math.random()*9999).toString(16).toUpperCase();
+                    this.generate();
+                };
+
+                this.ui.pause.onclick = () => {
+                    this.engine.isRotating = !this.engine.isRotating;
+                    this.ui.pause.textContent = this.engine.isRotating ? "Pause Spin" : "Resume Spin";
+                };
+
+                this.ui.theme.onclick = () => {
+                    const current = document.body.getAttribute('data-theme');
+                    document.body.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+                };
+
+                this.ui.export.onclick = () => {
+                    const link = document.createElement('a');
+                    link.download = `AstroGen_${this.ui.seed.value}.png`;
+                    link.href = this.engine.renderer.domElement.toDataURL("image/png");
+                    link.click();
+                };
+
+                // Labels Sync
+                ['detail', 'sea', 'rough', 'river', 'peaks', 'radius'].forEach(key => {
+                    this.ui[key].oninput = (e) => {
+                        document.getElementById(key + '-val').textContent = e.target.value;
+                    };
+                });
+            },
+
+            generate() {
+                this.engine.construct({
+                    seed: this.ui.seed.value,
+                    radius: parseFloat(this.ui.radius.value),
+                    detail: parseInt(this.ui.detail.value),
+                    sea: parseFloat(this.ui.sea.value),
+                    rough: parseFloat(this.ui.rough.value),
+                    rivers: parseInt(this.ui.river.value),
+                    peaks: parseFloat(this.ui.peaks.value)
+                });
+            }
+        };
+
+        window.onload = () => AstroApp.init();
+    </script>
 </body>
 </html>
