@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Gen</title>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="orb"></div>
+        <div style="margin-top: 30px; letter-spacing: 10px; color: var(--accent-glow); font-size: 0.7rem; font-weight: 900;">BOOTING GENERATOR ENGINE</div>
+    </div>
+
+    <div id="ui-layer">
+        <aside>
+            <header>
+                <div class="brand">
+                    <span class="engine-title">AstroGen</span>
+                    <span class="version">CORE ENGINE v5.0</span>
+                </div>
+                <button class="btn-small" id="theme-toggle" style="width: 44px; padding: 0;">🌓</button>
+            </header>
+
+            <span class="section-label">System Initialization</span>
+            <div class="control-card">
+                <label>Entropy Seed</label>
+                <div class="seed-row">
+                    <input type="text" id="seed-input" value="QUANTUM-7">
+                    <button class="btn-small" id="random-seed" style="width: 44px; padding: 0;">🎲</button>
+                </div>
+            </div>
+
+            <span class="section-label">Geological Tectonics</span>
+            <div class="control-card">
+                <div class="label-row">
+                    <label>Structural Resolution</label>
+                    <span class="val-badge" id="detail-val">96</span>
+                </div>
+                <input type="range" id="detail-slider" min="32" max="192" step="32" value="96">
+            </div>
+
+            <div class="control-card">
+                <div class="label-row">
+                    <label>Noise Scale</label>
+                    <span class="val-badge" id="scale-val">1.2</span>
+                </div>
+                <input type="range" id="scale-slider" min="0.5" max="3.0" step="0.1" value="1.2">
+            </div>
+
+            <div class="control-card">
+                <div class="label-row">
+                    <label>Surface Roughness</label>
+                    <span class="val-badge" id="rough-val">1.5</span>
+                </div>
+                <input type="range" id="rough-slider" min="0.5" max="4.0" step="0.1" value="1.5">
+            </div>
+
+            <span class="section-label">Hydrosphere & Atmosphere</span>
+            <div class="control-card">
+                <div class="label-row">
+                    <label>Global Sea Level</label>
+                    <span class="val-badge" id="sea-val">0.45</span>
+                </div>
+                <input type="range" id="sea-slider" min="0.2" max="0.7" step="0.01" value="0.45">
+            </div>
+
+            <div class="control-card">
+                <div class="label-row">
+                    <label>Hydrological Density (Rivers)</label>
+                    <span class="val-badge" id="river-val">40</span>
+                </div>
+                <input type="range" id="river-slider" min="0" max="200" step="10" value="40">
+            </div>
+
+            <span class="section-label">Operations</span>
+            <button class="btn-main" id="generate-btn">Synthesize World</button>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button class="btn-small" id="play-pause">Pause Spin</button>
+                <button class="btn-small" id="snapshot">Snapshot</button>
+            </div>
+        </aside>
+
+        <div class="hud">
+            <div class="hud-card">
+                <span class="hud-label">Geological Mesh</span>
+                <span class="hud-value" id="hud-verts">0</span>
+            </div>
+            <div class="hud-card">
+                <span class="hud-label">Drainage Points</span>
+                <span class="hud-value" id="hud-rivers">0</span>
+            </div>
+            <div class="hud-card">
+                <span class="hud-label">Ecosystem Status</span>
+                <span class="hud-value" style="color: #4ade80;">Active</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-wrap"></div>
+</body>
+</html>
