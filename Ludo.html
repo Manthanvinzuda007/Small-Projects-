@@ -6,6 +6,56 @@
     <title> Ludo </title>
 </head>
 <body>
-    
+     <!-- STARTUP FLOW -->
+    <div id="modal-overlay">
+        <!-- Screen 1: Player Count -->
+        <div class="setup-card" id="setup-players">
+            <h1>LUDO ROYAL</h1>
+            <h2>Select Game Mode</h2>
+            <div class="option-grid">
+                <button class="btn" onclick="Setup.selectMode('AI')">🎮 1 vs AI</button>
+                <button class="btn" onclick="Setup.selectMode('2')">👥 2 Players</button>
+                <button class="btn" onclick="Setup.selectMode('3')">👥 3 Players</button>
+                <button class="btn" onclick="Setup.selectMode('4')">👥 4 Players</button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Color Picker -->
+        <div class="setup-card" id="setup-colors" style="display:none;">
+            <h1>LUDO ROYAL</h1>
+            <h2 id="color-setup-text">Player 1, Choose Color</h2>
+            <div class="color-picker-row" id="color-dots-container">
+                <div class="color-dot red" onclick="Setup.pickColor('red')"></div>
+                <div class="color-dot green" onclick="Setup.pickColor('green')"></div>
+                <div class="color-dot yellow" onclick="Setup.pickColor('yellow')"></div>
+                <div class="color-dot blue" onclick="Setup.pickColor('blue')"></div>
+            </div>
+            <p id="setup-hint" style="margin-top:25px; font-size: 0.85rem; opacity: 0.5;">Human choices come first.</p>
+        </div>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="winner-screen">
+        <h1 id="winner-text" style="font-size: 4rem; margin-bottom: 10px; color: gold;">RED VICTORIOUS!</h1>
+        <p style="margin-bottom: 40px; font-size: 1.2rem; opacity: 0.7;">The board is yours, Emperor.</p>
+        <button class="btn" onclick="location.reload()" style="padding: 20px 60px; font-size: 1.2rem;">New Campaign</button>
+    </div>
+
+    <!-- HUD -->
+    <div class="status-header">
+        <div id="turn-msg">Classic Ludo</div>
+    </div>
+
+    <div class="game-stage">
+        <!-- Dice Indicators -->
+        <div id="dice-red" class="dice-box dice-red disabled-dice" onclick="Game.roll()"><div class="dice-body"></div></div>
+        <div id="dice-green" class="dice-box dice-green disabled-dice" onclick="Game.roll()"><div class="dice-body"></div></div>
+        <div id="dice-yellow" class="dice-box dice-yellow disabled-dice" onclick="Game.roll()"><div class="dice-body"></div></div>
+        <div id="dice-blue" class="dice-box dice-blue disabled-dice" onclick="Game.roll()"><div class="dice-body"></div></div>
+
+        <div id="board" class="ludo-board">
+            <!-- Dynamic Grid & Content -->
+        </div>
+    </div>
 </body>
 </html>
