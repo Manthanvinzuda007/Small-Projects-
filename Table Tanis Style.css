@@ -1,1 +1,45 @@
 
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        body {
+            background-color: #050507;
+            overflow: hidden;
+            touch-action: none;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #game-container {
+            position: relative;
+            transition: transform 0.1s ease-out;
+        }
+
+        canvas {
+            display: block;
+            margin: auto;
+            border: 2px solid #1e293b;
+            box-shadow: 0 0 40px rgba(34, 211, 238, 0.1);
+            border-radius: 12px;
+            background: radial-gradient(circle at center, #111827 0%, #050507 100%);
+            max-width: 95vw;
+            max-height: 75vh;
+        }
+
+        .neon-glow-cyan { text-shadow: 0 0 15px rgba(34, 211, 238, 0.8); }
+        .neon-glow-pink { text-shadow: 0 0 15px rgba(236, 72, 153, 0.8); }
+
+        .shake {
+            animation: shake 0.15s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .overlay {
+            background: rgba(5, 5, 7, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    
