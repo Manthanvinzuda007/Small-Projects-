@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Table Tennis Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
 
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white select-none">
+
+    <!-- HUD -->
+    <div class="mb-6 flex gap-16 items-center">
+        <div class="text-center">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-cyan-500/60 mb-1">Player One</p>
+            <h1 id="playerScore" class="text-6xl font-black neon-glow-cyan text-cyan-400">0</h1>
+        </div>
+        <div class="text-center group">
+            <div class="px-4 py-1 border border-white/10 rounded-full mb-2">
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Difficulty</p>
+            </div>
+            <h1 id="gameLevel" class="text-2xl font-bold text-white tracking-widest">LVL 01</h1>
+        </div>
+        <div class="text-center">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-pink-500/60 mb-1">CPU Alpha</p>
+            <h1 id="cpuScore" class="text-6xl font-black neon-glow-pink text-pink-500">0</h1>
+        </div>
+    </div>
+
+    <!-- Game Wrapper for Shake Effect -->
+    <div id="game-container">
+        <canvas id="pongCanvas"></canvas>
+    </div>
+
+    <div class="mt-6 flex flex-col items-center gap-2">
+        <p class="text-gray-500 text-[10px] tracking-[0.2em] uppercase">Control: Mouse or Touch</p>
+        <div class="h-1 w-32 bg-gray-800 rounded-full overflow-hidden">
+            <div id="speedBar" class="h-full bg-cyan-500 w-0 transition-all duration-300"></div>
+        </div>
+    </div>
+
+    <!-- UI Overlay -->
+    <div id="overlay" class="fixed inset-0 flex items-center justify-center overlay z-50">
+        <div class="text-center p-12 border border-white/10 rounded-[2rem] bg-gray-900/40 shadow-2xl">
+            <h2 id="overlayTitle" class="text-5xl font-black mb-2 tracking-tighter italic text-white uppercase">Neon Pro</h2>
+            <p id="overlayMsg" class="mb-8 text-cyan-500/80 text-sm tracking-widest uppercase">The Ultimate Table Tennis Challenge</p>
+            <button id="startBtn" class="group relative px-12 py-5 bg-white text-black font-black rounded-xl overflow-hidden transition-all hover:scale-105 active:scale-95">
+                <span class="relative z-10">INITIALIZE GAME</span>
+                <div class="absolute inset-0 bg-cyan-400 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
